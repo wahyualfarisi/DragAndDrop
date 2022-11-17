@@ -1,3 +1,5 @@
+type UserInputs = [string, string, number]
+
 // autobind decorator
 function autobind(_: any, _2: string, descriptor: PropertyDescriptor){
   const originalMethod = descriptor.value;
@@ -37,11 +39,35 @@ class ProjectInput {
     this.attach();
   }
 
+  private gatherUserInput(): UserInputs | void {
+    const [ enteredTitle, enterdDescription, enteredPeople ] = [ 
+      this.titleInputElement.value, 
+      this.descriptionInputElement.value, 
+      this.peopleInputElement.value 
+    ];
+  
+    return [enteredTitle, enterdDescription, +enteredPeople]
+  }
+
   @autobind
   private submitHandler(event: Event){
     event.preventDefault();
+    const userInput = this.gatherUserInput() as UserInputs | void;
+    if (Array.isArray(userInput)){
+      const [title, desc, people] = userInput;
 
-    console.log(this.titleInputElement.value);
+      console.log({
+        title,
+        desc,
+        people
+      })
+
+      this.clearInput()
+    }
+  }
+
+  private clearInput(){
+    this.element.reset()
   }
 
   private configure(){
