@@ -1,7 +1,20 @@
+//Project Type
+enum ProjectStatus {
+  Active = "active",
+  Finished = "finished"
+}
+
+// Project class
+class Project {
+  constructor(public id: string, public title: string, public description: string, public people: number, public status: ProjectStatus.Active){}
+}
+
 // Project State Management
+type Listener = (items: Project[]) => void;
+
 class ProjectState {
-  private listener: any[] = [];
-  private projects: any[] = [];
+  private listener: Listener[] = [];
+  private projects: Project[] = [];
   private static instance: ProjectState;
 
   private constructor() {}
@@ -15,17 +28,18 @@ class ProjectState {
     return this.instance;
   }
 
-  addListener(listenerFn: Function) {
+  addListener(listenerFn: Listener) {
     this.listener.push(listenerFn);
   }
 
   addProject(title: string, description: string, numOfPeople: number){
-    const newProject = {
-      id: Math.random().toString(),
+    const newProject = new Project(
+      Math.random().toString(),
       title,
       description,
-      people: numOfPeople
-    };
+      numOfPeople,
+      ProjectStatus.Active
+    );
 
     this.projects.push(newProject);
     for (const listenerFn of this.listener){
@@ -34,7 +48,6 @@ class ProjectState {
   }
 }
 const projectState = ProjectState.getInstance();
-
 
 //Validation
 interface Validatable {
@@ -94,7 +107,7 @@ class ProjectList {
   templateElement: HTMLTemplateElement;
   hostElement: HTMLDivElement;
   element: HTMLElement;
-  assignedProjects: any[];
+  assignedProjects: Project[];
   
   constructor(private type: ProjectType){
     this.templateElement = document.getElementById('project-list')! as HTMLTemplateElement;
@@ -106,8 +119,8 @@ class ProjectList {
 
     this.assignedProjects = []
 
-    projectState.addListener((projects: any[]) => {
-      this.assignedProjects = [...projects]
+    projectState.addListener((projects: Project[]) => {
+      this.assignedProjects = projects.filter(project => project.status === this.type)
       this.renderProjects();
     })
 
@@ -116,9 +129,9 @@ class ProjectList {
   }
 
   private renderProjects(){
-    const listEl = document.getElementById(`${this.type}-projects-list`);
+    const listEl = document.getElementById(`${this.type}-projects-list`)! as HTMLUListElement;
+    listEl.innerHTML = ''
     for (const prjItem of this.assignedProjects){
-      console.log('prj Item ', prjItem)
       const listItem = document.createElement('li');
       listItem.textContent = prjItem.title;
       listEl?.appendChild(listItem);
