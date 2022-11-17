@@ -1,3 +1,38 @@
+//Validation
+interface Validatable {
+  value: string | number;
+  required?: boolean;
+  minLength?: number;
+  maxLength?: number;
+  min?: number;
+  max?: number;
+}
+
+function validate(validatableInput: Validatable): boolean {
+  let isValid = true;
+  if (validatableInput.required){
+    isValid = isValid && validatableInput.value.toString().trim().length !== 0;
+  }
+
+  if (validatableInput.minLength != null && typeof validatableInput.value === 'string'){
+    isValid = isValid && validatableInput.value.length >= validatableInput.minLength;
+  }
+
+  if (validatableInput.maxLength != null && typeof validatableInput.value === 'string'){
+    isValid = isValid && validatableInput.value.length <= validatableInput.maxLength;
+  }
+
+  if (validatableInput.min != null && typeof validatableInput.value === 'number'){
+    isValid = isValid && validatableInput.value >= validatableInput.min
+  }
+
+  if (validatableInput.max != null && typeof validatableInput.value === 'number'){
+    isValid = isValid && validatableInput.value <= validatableInput.max
+  }
+
+  return isValid;
+}
+
 type UserInputs = [string, string, number]
 
 // autobind decorator
@@ -45,6 +80,30 @@ class ProjectInput {
       this.descriptionInputElement.value, 
       this.peopleInputElement.value 
     ];
+
+    const titleValidatable: Validatable = {
+      value: enteredTitle,
+      required: true,
+      minLength: 5
+    }
+
+    const descValidatable: Validatable = {
+      value: enterdDescription,
+      required: true,
+      minLength: 5
+    }
+
+    const peopleValidatable: Validatable = {
+      value: enteredPeople,
+      required: true,
+      min: 1,
+      max: 5
+    }
+
+    if( !validate(titleValidatable) || !validate(descValidatable) || !validate(peopleValidatable) ){
+      alert('Please check inputs');
+      return;
+    }
   
     return [enteredTitle, enterdDescription, +enteredPeople]
   }
@@ -56,12 +115,7 @@ class ProjectInput {
     if (Array.isArray(userInput)){
       const [title, desc, people] = userInput;
 
-      console.log({
-        title,
-        desc,
-        people
-      })
-
+      console.log({ title, desc, people })
       this.clearInput()
     }
   }
